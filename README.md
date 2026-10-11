@@ -1,6 +1,6 @@
 # Deploy and Host Medusa with Railway
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/medusa-v2-commerce-store-backend-storefr)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/medusa-v2-commerce-store-backend-storefr?referralCode=20H68q)
 
 Launch a complete Medusa v2 store on Railway: the Medusa backend with its admin dashboard, a background worker, the official Next.js storefront, Meilisearch-powered search, Postgres, Redis and product images in a Railway Bucket. The admin user and the storefront's API key are set up automatically on the first deploy. Community template.
 
