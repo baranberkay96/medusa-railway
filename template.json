@@ -1,0 +1,644 @@
+{
+  "name": "Medusa v2 Commerce Store (Backend + Storefront)",
+  "description": "Headless e-commerce with admin, Next.js storefront, search and background workers.",
+  "category": "Other",
+  "tags": [
+    "medusa",
+    "ecommerce",
+    "headless-commerce",
+    "nextjs",
+    "meilisearch",
+    "postgres",
+    "redis"
+  ],
+  "upstream": {
+    "repo": "medusajs/medusa",
+    "version": "v2.21.2",
+    "checked": "2026-10-10"
+  },
+  "services": {
+    "Backend": {
+      "icon": "https://avatars.githubusercontent.com/u/62591822?v=4",
+      "source": {
+        "repo": "baranberkay96/medusa-railway",
+        "rootDirectory": "/services/backend"
+      },
+      "startCommand": null,
+      "preDeployCommand": "sh /app/scripts/predeploy.sh",
+      "healthcheckPath": "/health",
+      "healthcheckTimeout": 600,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": true,
+      "targetPort": 9000,
+      "tcpProxy": null,
+      "volume": null,
+      "variables": {
+        "NODE_ENV": {
+          "defaultValue": "production",
+          "description": "Run Medusa in production mode.",
+          "required": false
+        },
+        "PORT": {
+          "defaultValue": "9000",
+          "description": "HTTP port Medusa listens on (also used by the Railway healthcheck).",
+          "required": false
+        },
+        "MEDUSA_WORKER_MODE": {
+          "defaultValue": "server",
+          "description": "This instance only serves HTTP; background jobs run on the Worker service.",
+          "required": false
+        },
+        "DISABLE_MEDUSA_ADMIN": {
+          "defaultValue": "false",
+          "description": "Keep false here: this service builds and serves the admin dashboard at /app.",
+          "required": false
+        },
+        "DATABASE_URL": {
+          "defaultValue": "${{Postgres.DATABASE_URL}}",
+          "description": "Postgres connection string over the private network.",
+          "required": false
+        },
+        "REDIS_URL": {
+          "defaultValue": "${{Redis.REDIS_URL}}?family=0",
+          "description": "Redis for sessions, events, workflows, locking and cache; family=0 enables IPv4+IPv6 lookup.",
+          "required": false
+        },
+        "JWT_SECRET": {
+          "defaultValue": "${{secret(64)}}",
+          "description": "Secret used to sign auth tokens. Generated; shared with the Worker.",
+          "required": false
+        },
+        "COOKIE_SECRET": {
+          "defaultValue": "${{secret(64)}}",
+          "description": "Secret used to sign session cookies. Generated; shared with the Worker.",
+          "required": false
+        },
+        "MEDUSA_BACKEND_URL": {
+          "defaultValue": "https://${{RAILWAY_PUBLIC_DOMAIN}}",
+          "description": "Public URL of this backend (admin and API).",
+          "required": false
+        },
+        "STORE_CORS": {
+          "defaultValue": "https://${{Storefront.RAILWAY_PUBLIC_DOMAIN}}",
+          "description": "Origins allowed to call the Store API (the storefront domain; comma-separate extra domains).",
+          "required": false
+        },
+        "ADMIN_CORS": {
+          "defaultValue": "https://${{RAILWAY_PUBLIC_DOMAIN}}",
+          "description": "Origins allowed to call the Admin API (the admin is served from this domain).",
+          "required": false
+        },
+        "AUTH_CORS": {
+          "defaultValue": "https://${{RAILWAY_PUBLIC_DOMAIN}},https://${{Storefront.RAILWAY_PUBLIC_DOMAIN}}",
+          "description": "Origins allowed to call the auth routes (admin and storefront).",
+          "required": false
+        },
+        "MEDUSA_ADMIN_EMAIL": {
+          "defaultValue": "admin@example.com",
+          "description": "Login email of the first admin user, created on first deploy. Change it to your own address before deploying.",
+          "required": false
+        },
+        "MEDUSA_ADMIN_PASSWORD": {
+          "defaultValue": "${{secret(24, \"abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789\")}}",
+          "description": "Password of the first admin user (generated). Only used to create the user; change it later in the admin.",
+          "required": false
+        },
+        "STOREFRONT_BOOTSTRAP_TOKEN": {
+          "defaultValue": "${{secret(48, \"abcdef0123456789\")}}",
+          "description": "Shared token the Storefront uses to fetch the publishable API key from /internal/publishable-key at start.",
+          "required": false
+        },
+        "SEED_DEMO_PRODUCTS": {
+          "defaultValue": "false",
+          "description": "Set to true to add 50 extra demo products on the next deploy (idempotent). The base demo store is always created on first migration.",
+          "required": false
+        },
+        "S3_FILE_URL": {
+          "defaultValue": "https://${{Media-Proxy.RAILWAY_PUBLIC_DOMAIN}}",
+          "description": "Public base URL for uploaded files: the Media-Proxy service, because Railway Buckets are private.",
+          "required": false
+        },
+        "S3_BUCKET": {
+          "defaultValue": "${{Bucket.BUCKET}}",
+          "description": "Bucket name used for the S3 API (Railway Bucket reference).",
+          "required": false
+        },
+        "S3_REGION": {
+          "defaultValue": "${{Bucket.REGION}}",
+          "description": "Bucket region (Railway Bucket reference, usually auto).",
+          "required": false
+        },
+        "S3_ENDPOINT": {
+          "defaultValue": "${{Bucket.ENDPOINT}}",
+          "description": "S3 API endpoint of the Railway Bucket (public network only).",
+          "required": false
+        },
+        "S3_ACCESS_KEY_ID": {
+          "defaultValue": "${{Bucket.ACCESS_KEY_ID}}",
+          "description": "Bucket access key ID (Railway Bucket reference).",
+          "required": false
+        },
+        "S3_SECRET_ACCESS_KEY": {
+          "defaultValue": "${{Bucket.SECRET_ACCESS_KEY}}",
+          "description": "Bucket secret access key (Railway Bucket reference).",
+          "required": false
+        },
+        "S3_FORCE_PATH_STYLE": {
+          "defaultValue": "false",
+          "description": "Set to true only for older Railway Buckets that require path-style URLs (see the bucket's Credentials tab).",
+          "required": false
+        },
+        "MEILISEARCH_HOST": {
+          "defaultValue": "http://${{Meilisearch.RAILWAY_PRIVATE_DOMAIN}}:${{Meilisearch.PORT}}",
+          "description": "Meilisearch URL over the private network. Clear it (Backend and Worker) to use Medusa's built-in PostgreSQL search instead.",
+          "required": false
+        },
+        "MEILISEARCH_API_KEY": {
+          "defaultValue": "${{Meilisearch.MEILI_MASTER_KEY}}",
+          "description": "Meilisearch key used by the backend to manage and query indexes.",
+          "required": false
+        },
+        "STRIPE_API_KEY": {
+          "defaultValue": "",
+          "description": "Optional. Stripe secret key; enables the Stripe payment provider (then enable it per region in the admin).",
+          "required": false
+        },
+        "STRIPE_WEBHOOK_SECRET": {
+          "defaultValue": "",
+          "description": "Optional. Stripe webhook signing secret for <backend URL>/hooks/payment/stripe_stripe.",
+          "required": false
+        }
+      }
+    },
+    "Worker": {
+      "icon": "https://avatars.githubusercontent.com/u/62591822?v=4",
+      "source": {
+        "repo": "baranberkay96/medusa-railway",
+        "rootDirectory": "/services/backend"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": "/health",
+      "healthcheckTimeout": 900,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": null,
+      "variables": {
+        "NODE_ENV": {
+          "defaultValue": "production",
+          "description": "Run Medusa in production mode.",
+          "required": false
+        },
+        "PORT": {
+          "defaultValue": "9000",
+          "description": "Port of the worker's internal /health endpoint (used by the Railway healthcheck).",
+          "required": false
+        },
+        "MEDUSA_WORKER_MODE": {
+          "defaultValue": "worker",
+          "description": "Process subscribers, scheduled jobs, workflows and search indexing; no public HTTP.",
+          "required": false
+        },
+        "DISABLE_MEDUSA_ADMIN": {
+          "defaultValue": "true",
+          "description": "The worker does not build or serve the admin dashboard.",
+          "required": false
+        },
+        "DATABASE_URL": {
+          "defaultValue": "${{Postgres.DATABASE_URL}}",
+          "description": "Postgres connection string over the private network.",
+          "required": false
+        },
+        "REDIS_URL": {
+          "defaultValue": "${{Redis.REDIS_URL}}?family=0",
+          "description": "Redis connection (same instance as the Backend).",
+          "required": false
+        },
+        "JWT_SECRET": {
+          "defaultValue": "${{Backend.JWT_SECRET}}",
+          "description": "Same JWT secret as the Backend.",
+          "required": false
+        },
+        "COOKIE_SECRET": {
+          "defaultValue": "${{Backend.COOKIE_SECRET}}",
+          "description": "Same cookie secret as the Backend.",
+          "required": false
+        },
+        "MEDUSA_BACKEND_URL": {
+          "defaultValue": "${{Backend.MEDUSA_BACKEND_URL}}",
+          "description": "Public backend URL, for links generated by background jobs.",
+          "required": false
+        },
+        "MEDUSA_SERVER_HEALTH_URL": {
+          "defaultValue": "http://${{Backend.RAILWAY_PRIVATE_DOMAIN}}:${{Backend.PORT}}/health",
+          "description": "The worker waits for this URL before starting, so it never runs before the Backend's migrations.",
+          "required": false
+        },
+        "WAIT_FOR_SERVER_TIMEOUT_SECONDS": {
+          "defaultValue": "840",
+          "description": "Maximum wait for the Backend health URL before starting anyway.",
+          "required": false
+        },
+        "S3_FILE_URL": {
+          "defaultValue": "${{Backend.S3_FILE_URL}}",
+          "description": "Same public file URL as the Backend.",
+          "required": false
+        },
+        "S3_BUCKET": {
+          "defaultValue": "${{Bucket.BUCKET}}",
+          "description": "Bucket name used for the S3 API (Railway Bucket reference).",
+          "required": false
+        },
+        "S3_REGION": {
+          "defaultValue": "${{Bucket.REGION}}",
+          "description": "Bucket region (Railway Bucket reference, usually auto).",
+          "required": false
+        },
+        "S3_ENDPOINT": {
+          "defaultValue": "${{Bucket.ENDPOINT}}",
+          "description": "S3 API endpoint of the Railway Bucket (public network only).",
+          "required": false
+        },
+        "S3_ACCESS_KEY_ID": {
+          "defaultValue": "${{Bucket.ACCESS_KEY_ID}}",
+          "description": "Bucket access key ID (Railway Bucket reference).",
+          "required": false
+        },
+        "S3_SECRET_ACCESS_KEY": {
+          "defaultValue": "${{Bucket.SECRET_ACCESS_KEY}}",
+          "description": "Bucket secret access key (Railway Bucket reference).",
+          "required": false
+        },
+        "S3_FORCE_PATH_STYLE": {
+          "defaultValue": "${{Backend.S3_FORCE_PATH_STYLE}}",
+          "description": "Same URL style setting as the Backend.",
+          "required": false
+        },
+        "MEILISEARCH_HOST": {
+          "defaultValue": "${{Backend.MEILISEARCH_HOST}}",
+          "description": "Same Meilisearch URL as the Backend (indexing runs on the worker).",
+          "required": false
+        },
+        "MEILISEARCH_API_KEY": {
+          "defaultValue": "${{Backend.MEILISEARCH_API_KEY}}",
+          "description": "Same Meilisearch key as the Backend.",
+          "required": false
+        },
+        "STRIPE_API_KEY": {
+          "defaultValue": "${{Backend.STRIPE_API_KEY}}",
+          "description": "Same Stripe configuration as the Backend (optional).",
+          "required": false
+        },
+        "STRIPE_WEBHOOK_SECRET": {
+          "defaultValue": "${{Backend.STRIPE_WEBHOOK_SECRET}}",
+          "description": "Same Stripe webhook secret as the Backend (optional).",
+          "required": false
+        }
+      }
+    },
+    "Storefront": {
+      "icon": "https://devicons.railway.app/i/nextjs.svg",
+      "source": {
+        "repo": "baranberkay96/medusa-railway",
+        "rootDirectory": "/services/storefront"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": "/api/health",
+      "healthcheckTimeout": 900,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": true,
+      "targetPort": 8000,
+      "tcpProxy": null,
+      "volume": null,
+      "variables": {
+        "NODE_ENV": {
+          "defaultValue": "production",
+          "description": "Run Next.js in production mode.",
+          "required": false
+        },
+        "PORT": {
+          "defaultValue": "8000",
+          "description": "HTTP port of the Next.js server.",
+          "required": false
+        },
+        "NEXT_PUBLIC_MEDUSA_BACKEND_URL": {
+          "defaultValue": "https://${{Backend.RAILWAY_PUBLIC_DOMAIN}}",
+          "description": "Public backend URL used by the browser and the server (applied at container start).",
+          "required": false
+        },
+        "NEXT_PUBLIC_BASE_URL": {
+          "defaultValue": "https://${{RAILWAY_PUBLIC_DOMAIN}}",
+          "description": "Public URL of this storefront, used for absolute links and metadata.",
+          "required": false
+        },
+        "NEXT_PUBLIC_DEFAULT_REGION": {
+          "defaultValue": "dk",
+          "description": "Fallback country code; must belong to a region in Medusa (the demo region covers gb, de, dk, se, fr, es, it).",
+          "required": false
+        },
+        "MEDUSA_INTERNAL_URL": {
+          "defaultValue": "http://${{Backend.RAILWAY_PRIVATE_DOMAIN}}:${{Backend.PORT}}",
+          "description": "Backend URL on the private network, used only at start to fetch the publishable API key.",
+          "required": false
+        },
+        "STOREFRONT_BOOTSTRAP_TOKEN": {
+          "defaultValue": "${{Backend.STOREFRONT_BOOTSTRAP_TOKEN}}",
+          "description": "Token for the Backend's /internal/publishable-key route.",
+          "required": false
+        },
+        "NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY": {
+          "defaultValue": "",
+          "description": "Optional override (pk_...). Leave empty to fetch the key from the Backend automatically.",
+          "required": false
+        },
+        "KEY_WAIT_TIMEOUT_SECONDS": {
+          "defaultValue": "840",
+          "description": "Maximum time to wait for the Backend at start before the container exits and restarts.",
+          "required": false
+        },
+        "NEXT_PUBLIC_STRIPE_KEY": {
+          "defaultValue": "",
+          "description": "Optional. Stripe publishable key; build-time value, redeploy after changing it.",
+          "required": false
+        }
+      }
+    },
+    "Media-Proxy": {
+      "icon": "https://devicons.railway.app/i/bun.svg",
+      "source": {
+        "repo": "baranberkay96/medusa-railway",
+        "rootDirectory": "/services/media-proxy"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": "/health",
+      "healthcheckTimeout": 60,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": true,
+      "targetPort": 8080,
+      "tcpProxy": null,
+      "volume": null,
+      "variables": {
+        "PORT": {
+          "defaultValue": "8080",
+          "description": "HTTP port of the proxy.",
+          "required": false
+        },
+        "S3_BUCKET": {
+          "defaultValue": "${{Bucket.BUCKET}}",
+          "description": "Bucket name used for the S3 API (Railway Bucket reference).",
+          "required": false
+        },
+        "S3_REGION": {
+          "defaultValue": "${{Bucket.REGION}}",
+          "description": "Bucket region (Railway Bucket reference, usually auto).",
+          "required": false
+        },
+        "S3_ENDPOINT": {
+          "defaultValue": "${{Bucket.ENDPOINT}}",
+          "description": "S3 API endpoint of the Railway Bucket (public network only).",
+          "required": false
+        },
+        "S3_ACCESS_KEY_ID": {
+          "defaultValue": "${{Bucket.ACCESS_KEY_ID}}",
+          "description": "Bucket access key ID (Railway Bucket reference).",
+          "required": false
+        },
+        "S3_SECRET_ACCESS_KEY": {
+          "defaultValue": "${{Bucket.SECRET_ACCESS_KEY}}",
+          "description": "Bucket secret access key (Railway Bucket reference).",
+          "required": false
+        },
+        "S3_FORCE_PATH_STYLE": {
+          "defaultValue": "${{Backend.S3_FORCE_PATH_STYLE}}",
+          "description": "Same URL style setting as the Backend.",
+          "required": false
+        },
+        "CACHE_CONTROL": {
+          "defaultValue": "public, max-age=31536000, immutable",
+          "description": "Cache-Control header for served files (Medusa file keys are unique per upload).",
+          "required": false
+        },
+        "ALLOWED_CONTENT_TYPES": {
+          "defaultValue": "image/,video/",
+          "description": "Comma-separated content-type prefixes the proxy serves; other objects return 404.",
+          "required": false
+        }
+      }
+    },
+    "Meilisearch": {
+      "icon": "https://avatars.githubusercontent.com/u/43250847?v=4",
+      "source": {
+        "image": "getmeili/meilisearch:v1.54.3"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": "/health",
+      "healthcheckTimeout": 120,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/meili_data"
+      },
+      "variables": {
+        "PORT": {
+          "defaultValue": "7700",
+          "description": "Port Meilisearch listens on (used by the healthcheck and the Backend URL).",
+          "required": false
+        },
+        "MEILI_HTTP_ADDR": {
+          "defaultValue": "[::]:7700",
+          "description": "Listen on all IPv4/IPv6 interfaces for the private network.",
+          "required": false
+        },
+        "MEILI_MASTER_KEY": {
+          "defaultValue": "${{secret(48, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\")}}",
+          "description": "Master key protecting the Meilisearch API (generated).",
+          "required": false
+        },
+        "MEILI_ENV": {
+          "defaultValue": "production",
+          "description": "Production mode: requires the master key and disables the search preview UI.",
+          "required": false
+        },
+        "MEILI_DB_PATH": {
+          "defaultValue": "/meili_data/data.ms",
+          "description": "Index storage on the volume.",
+          "required": false
+        },
+        "MEILI_DUMP_DIR": {
+          "defaultValue": "/meili_data/dumps",
+          "description": "Dump directory on the volume (used for upgrades and backups).",
+          "required": false
+        },
+        "MEILI_NO_ANALYTICS": {
+          "defaultValue": "true",
+          "description": "Disable Meilisearch telemetry.",
+          "required": false
+        },
+        "MEILI_MAX_INDEXING_MEMORY": {
+          "defaultValue": "1GiB",
+          "description": "Upper bound for indexing memory so the container stays within its RAM budget.",
+          "required": false
+        }
+      }
+    },
+    "Postgres": {
+      "icon": "https://devicons.railway.app/i/postgresql.svg",
+      "source": {
+        "image": "ghcr.io/railwayapp-templates/postgres-ssl:18"
+      },
+      "startCommand": null,
+      "preDeployCommand": null,
+      "healthcheckPath": null,
+      "healthcheckTimeout": null,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/var/lib/postgresql/data"
+      },
+      "variables": {
+        "PGDATA": {
+          "defaultValue": "/var/lib/postgresql/data/pgdata",
+          "description": "Location where the database will be initialized",
+          "required": false
+        },
+        "PGHOST": {
+          "defaultValue": "${{RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Railway Private Domain Name.",
+          "required": false
+        },
+        "PGPORT": {
+          "defaultValue": "5432",
+          "description": "Port to connect to Postgres.",
+          "required": false
+        },
+        "PGUSER": {
+          "defaultValue": "${{ POSTGRES_USER }}",
+          "description": "Required variable for Data panel",
+          "required": false
+        },
+        "PGDATABASE": {
+          "defaultValue": "${{POSTGRES_DB}}",
+          "description": "Required variable for the data panel.",
+          "required": false
+        },
+        "PGPASSWORD": {
+          "defaultValue": "${{POSTGRES_PASSWORD}}",
+          "description": "Required variable for Data panel",
+          "required": false
+        },
+        "POSTGRES_DB": {
+          "defaultValue": "railway",
+          "description": "Default database created when image is started.",
+          "required": false
+        },
+        "DATABASE_URL": {
+          "defaultValue": "postgresql://${{PGUSER}}:${{POSTGRES_PASSWORD}}@${{RAILWAY_PRIVATE_DOMAIN}}:5432/${{PGDATABASE}}",
+          "description": "URL to connect to Postgres database.",
+          "required": false
+        },
+        "POSTGRES_USER": {
+          "defaultValue": "postgres",
+          "description": "User to connect to Postgres DB",
+          "required": false
+        },
+        "SSL_CERT_DAYS": {
+          "defaultValue": "820",
+          "description": "SSL certificate expiry in days.",
+          "required": false
+        },
+        "POSTGRES_PASSWORD": {
+          "defaultValue": "${{ secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\") }}",
+          "description": "Password to connect to DB",
+          "required": false
+        },
+        "RAILWAY_DEPLOYMENT_DRAINING_SECONDS": {
+          "defaultValue": "60",
+          "description": "Allow Postgres to cleanly shut down",
+          "required": false
+        }
+      }
+    },
+    "Redis": {
+      "icon": "https://cdn.sanity.io/images/sy1jschh/production/0ce0bfdcfbdbf69662b1116671f97c2dd788b655-157x157.svg",
+      "source": {
+        "image": "redis:8.2"
+      },
+      "startCommand": "/bin/sh -c \"rm -rf $RAILWAY_VOLUME_MOUNT_PATH/lost+found/ && exec docker-entrypoint.sh redis-server --requirepass $REDIS_PASSWORD --save 60 1 --dir $RAILWAY_VOLUME_MOUNT_PATH\"",
+      "preDeployCommand": null,
+      "healthcheckPath": null,
+      "healthcheckTimeout": null,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/data"
+      },
+      "variables": {
+        "REDISHOST": {
+          "defaultValue": "${{RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Private network hostname of the Redis service, only resolvable from services in the same environment",
+          "required": false
+        },
+        "REDISPORT": {
+          "defaultValue": "6379",
+          "description": "Port that Redis listens on",
+          "required": false
+        },
+        "REDISUSER": {
+          "defaultValue": "default",
+          "description": "Username for authenticating with Redis",
+          "required": false
+        },
+        "REDIS_URL": {
+          "defaultValue": "redis://${{ REDISUSER }}:${{ REDIS_PASSWORD }}@${{ REDISHOST }}:${{ REDISPORT }}",
+          "description": "Connection string for connecting to Redis using the private network",
+          "required": false
+        },
+        "REDISPASSWORD": {
+          "defaultValue": "${{REDIS_PASSWORD}}",
+          "description": "Alias of REDIS_PASSWORD for clients that expect the unseparated name",
+          "required": false
+        },
+        "REDIS_PASSWORD": {
+          "defaultValue": "${{ secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\") }}",
+          "description": "Randomly generated password for authenticating with Redis",
+          "required": false
+        }
+      }
+    }
+  },
+  "buckets": [
+    "Bucket"
+  ]
+}
