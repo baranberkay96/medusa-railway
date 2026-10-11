@@ -640,5 +640,6 @@
   },
   "buckets": [
     "Bucket"
-  ]
+  ],
+  "image": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/medusa.svg"
 }
