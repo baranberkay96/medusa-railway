@@ -46,7 +46,7 @@ Medusa is a headless commerce platform: a Node.js backend exposes Store and Admi
 
 1. Before deploying, set `MEDUSA_ADMIN_EMAIL` on the Backend to your address (default `admin@example.com`). No other input is needed.
 2. Wait for the Backend pre-deploy (migrations + demo store) and for all services to turn healthy; the Storefront waits for the Backend on its first start.
-3. Open `https://<backend-domain>/app` and log in with `MEDUSA_ADMIN_EMAIL` and the generated `MEDUSA_ADMIN_PASSWORD` from the Backend's Variables tab. Change the password.
+3. Open `https://{backend-domain}/app` and log in with `MEDUSA_ADMIN_EMAIL` and the generated `MEDUSA_ADMIN_PASSWORD` from the Backend's Variables tab. Change the password.
 4. Open the Storefront domain: the demo region and products are live. Add Stripe keys (`STRIPE_API_KEY`, `STRIPE_WEBHOOK_SECRET` on the Backend, `NEXT_PUBLIC_STRIPE_KEY` on the Storefront) when you are ready to take payments.
 
 **Scaling workers**: raise the Worker's replica count in Railway; it is stateless and coordinates through Redis. The Backend and Storefront are stateless too and can run more replicas. Meilisearch, Postgres and Redis keep one instance each (they own volumes).
