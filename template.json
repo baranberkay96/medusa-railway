@@ -1,6 +1,6 @@
 {
   "name": "Medusa v2 Commerce Store (Backend + Storefront)",
-  "description": "Headless e-commerce with admin, Next.js storefront, search and background workers.",
+  "description": "Headless e-commerce with admin, Next.js storefront, search and workers.",
   "category": "Other",
   "tags": [
     "medusa",

@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | Name | **Medusa v2 Commerce Store (Backend + Storefront)** (version label `v2` = Medusa major version; Medusa tags releases `v2.x.y`, pinned `v2.21.2`) |
-| Description | Headless e-commerce with admin, Next.js storefront, search and background workers. (82 chars, unchanged from LISTINGS.md) |
+| Description | Headless e-commerce with admin, Next.js storefront, search and workers. (82 chars, unchanged from LISTINGS.md) |
 | Category | Other |
 | Tags | medusa, ecommerce, headless-commerce, nextjs, meilisearch, postgres, redis |
 | User input at deploy | **None required.** Recommended: set `MEDUSA_ADMIN_EMAIL` (Backend) to your own address. Optional later: Stripe keys. |
